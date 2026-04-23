@@ -1,0 +1,14 @@
+node_modules
+.next
+.turbo
+dist
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+coverage
+.vercel
+.deno
+kv.sqlite3
+kv.sqlite3-*

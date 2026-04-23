@@ -1,0 +1,85 @@
+================================================================================
+Change log (append-only). Most recent last.
+Format:
+  [YYYY-MM-DD HH:MM  scope] summary
+    - bullet
+    - bullet
+================================================================================
+
+[2026-04-23  repo]  Initial scaffold
+  - pnpm workspace + Turborepo config at root
+  - Strict TypeScript base config (tsconfig.base.json)
+  - Deno workspace config for apps/realtime with local import map
+  - .gitignore, prompt.txt, changes/changes.txt per user rules
+
+[2026-04-23  packages/shared-types]  Zod schemas and inferred TS types
+  - Branded ID types (EventId, ParticipantId, GroupId, FormId, QuestionId, ResponseId, DeviceId)
+  - Entity schemas: EventMeta, Participant, Group, Form, Question, Response, Presence
+  - Barrel export consumable from Node (Next apps) and Deno (realtime)
+
+[2026-04-23  packages/protocol]  Wire protocol definitions
+  - Versioned envelope with id/ts/type/payload
+  - Client->Server messages (join, heartbeat, response.submit, host.*)
+  - Server->Client messages (welcome, form.issued, group.assigned, presence.delta, response.rollup, error)
+  - Codec helpers and error code enum
+
+[2026-04-23  packages/ecs]  Entity-Component-System core
+  - World, EntityId, Component store abstraction (in-memory with pluggable persistence)
+  - Systems: GroupingSystem, BroadcastSystem, AggregationSystem, PresenceSystem
+  - Vitest unit tests for each system
+
+[2026-04-23  apps/realtime]  Deno + Hono WebSocket gateway
+  - Deno KV-backed state with kv.watch() pub/sub fanout
+  - JWT auth: host magic-link + participant event-code tokens (jose)
+  - Ring-level guards: authn/authz, Zod input validation, per-socket rate limiter
+  - Session management, presence heartbeats, broadcaster outbox
+
+[2026-04-23  apps/host]  Next.js 15 dashboard
+  - App Router, strict TS, Tailwind, minimal shadcn-style primitives
+  - Host auth screen, event create, form authoring, partition/merge controls
+  - Live presence panel and response rollup via useRealtime() hook
+
+[2026-04-23  apps/client]  Next.js 15 participant PWA
+  - App Router, strict TS, Tailwind, manifest.webmanifest + service worker
+  - Event-code join flow, form renderer (single/multi/text/scale)
+  - Offline-tolerant submit queue, live group banner
+
+[2026-04-23  security]  End-to-end hardening
+  - WSS-only transport, strict CORS allowlist, per-IP connection cap
+  - Zod validation at every boundary (HTTP + WS)
+  - Per-event KV key isolation, least-privilege store slices
+  - Token-bucket rate limiter (20 msg/s per socket)
+
+[2026-04-23  load-test]  300-socket harness
+  - Deno script that connects 300 WS clients, issues a form as host,
+    measures p50/p95/p99 end-to-end broadcast latency
+
+[2026-04-23  docs]  README with setup/run instructions
+  - Deno + pnpm prerequisites, three-terminal dev flow, architecture summary
+
+[2026-04-23  verify]  Local validation pass
+  - pnpm install: 405 packages resolved/installed
+  - @app/ecs vitest: 14/14 tests pass
+  - Typecheck (strict): shared-types, protocol, ecs, host, client all clean
+  - Deno `deno check apps/realtime/src/main.ts`: clean
+  - Realtime HTTP smoke test: register + create-event + participant-join all succeed
+
+[2026-04-23  fix/ws-robustness]  Stop infinite WS reconnect loop and log spam
+  - apps/realtime/src/ws/gateway.ts: attach a pre-session transport error
+    listener synchronously after Deno.upgradeWebSocket so disconnects during
+    the async JWT-verify window are observed; bail out of bindSocket if the
+    socket has already closed; demote "Unexpected EOF" to silence (routine
+    browser/HMR close) and log only `ev.message` on real errors.
+  - apps/{client,host}/lib/realtime/client.ts: recognise terminal server
+    errors (UNAUTHENTICATED / UNAUTHORIZED / NOT_FOUND / VERSION_MISMATCH)
+    and close code 1008; stop reconnecting via a `terminalStop` flag and a
+    capped exponential-backoff schedule (max 20 attempts); expose an
+    `onTerminal` callback.
+  - apps/client/lib/realtime/useRealtime.ts, apps/host/lib/realtime/useRealtime.ts:
+    surface terminal reason in state and forward it to the page.
+  - apps/client/app/page.tsx, apps/host/app/page.tsx: on terminal event,
+    clear the stored session (participant) or drop back to event-create
+    (host), showing a friendly "previous session ended" banner so the user
+    can re-join instead of getting stuck in a retry loop.
+  - Typecheck: realtime (deno check), @app/host, @app/client all clean.
+    @app/ecs vitest: 14/14 still pass.

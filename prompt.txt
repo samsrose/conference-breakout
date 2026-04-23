@@ -1,0 +1,59 @@
+================================================================================
+Prompt log (append-only). Most recent last.
+Format:
+  [YYYY-MM-DD HH:MM  tag] original user prompt
+  ---optimized---
+  optimized prompt actually sent to the agent
+================================================================================
+
+[2026-04-23  initial-brief]
+I want to build a system for hosting live events. This includes a web client
+available to all mobile devices within the event and main dashboard that can
+issue forms or issue questionnaires to each device as a whole. Additionally,
+the clients need to be able to be structured into groups of 8, or destructured
+back into the whole group. All device responses need to post back to the main
+dashboard from the respective web client. This should support up to 300 devices
+smoothly.
+
+The front end should be built with NextJS for each client as well as the host's
+dashboard with Deno instead of NodeJS.
+---optimized---
+Build a real-time live-event engagement platform with two TypeScript/Next.js
+frontends running on a Deno runtime (not Node.js):
+
+1. Host Dashboard
+   - Authors and broadcasts forms/questionnaires to connected devices
+   - Dynamically partitions connected clients into breakout groups of 8, and
+     merges them back into a single plenary group on demand
+   - Aggregates and visualizes incoming responses in real time
+
+2. Participant Web Client
+   - Mobile-first, installable/PWA-friendly, joins via event code or link
+   - Renders host-issued forms and streams responses back to the dashboard
+   - Reacts live to group assignment changes (plenary <-> group-of-8)
+
+Non-functional requirements:
+   - Smoothly supports >=300 concurrent devices (low-latency pub/sub; specify
+     transport: WebSockets, SSE, or WebTransport)
+   - Strict TypeScript across the stack; functional React components; small,
+     well-named components - no monolithic files
+   - Security-first, ring-level (defense-in-depth) architecture: authn/authz
+     boundaries, per-event isolation, rate limiting, input validation,
+     least-privilege data access
+   - Domain modeled with Entity-Component-System architecture (entities: Event,
+     Participant, Group, Form, Question, Response; systems: Grouping,
+     Broadcast, Aggregation, Presence)
+   - Horizontally scalable state store suitable for Deno Deploy or equivalent
+
+Deliverables:
+   - Monorepo layout (apps/host, apps/client, packages/shared-types,
+     packages/ecs)
+   - Data model + ECS component/system definitions
+   - Realtime protocol spec (message types for form issuance, group
+     (re)assignment, response submission, presence)
+   - Setup/run instructions using Deno
+
+[2026-04-23  architecture-decisions]
+Confirmed: pragmatic split (Next.js on Node/Vercel frontends + dedicated Deno
+realtime backend with Hono + Deno KV + event-code JWT for participants,
+host magic-link auth). Plan approved; implementation started.

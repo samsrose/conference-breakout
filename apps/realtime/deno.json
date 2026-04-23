@@ -1,0 +1,23 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read --unstable-kv --watch src/main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read --unstable-kv src/main.ts",
+    "test": "deno test --allow-net --allow-env --allow-read --unstable-kv",
+    "load-test": "deno run --allow-net --allow-env --unstable-kv ../../scripts/load-test.ts",
+    "typecheck": "deno check src/main.ts"
+  },
+  "imports": {
+    "hono": "npm:hono@^4.6.9",
+    "hono/cors": "npm:hono@^4.6.9/cors",
+    "hono/logger": "npm:hono@^4.6.9/logger",
+    "jose": "npm:jose@^5.9.6",
+    "zod": "npm:zod@^3.23.8",
+    "@app/shared-types": "../../packages/shared-types/src/index.ts",
+    "@app/protocol": "../../packages/protocol/src/index.ts",
+    "@app/ecs": "../../packages/ecs/src/index.ts"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["deno.ns", "deno.unstable", "dom"]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "nodeModulesDir": "none",
+  "imports": {
+    "@app/shared-types": "./packages/shared-types/src/index.ts",
+    "@app/protocol": "./packages/protocol/src/index.ts",
+    "@app/ecs": "./packages/ecs/src/index.ts",
+    "zod": "npm:zod@^3.23.8"
+  }
+}
