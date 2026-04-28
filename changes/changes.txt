@@ -83,3 +83,11 @@ Format:
     can re-join instead of getting stuck in a retry loop.
   - Typecheck: realtime (deno check), @app/host, @app/client all clean.
     @app/ecs vitest: 14/14 still pass.
+
+[2026-04-28  review/solid]  SOLID principles review (documentation only)
+  - Recorded findings in assistant response; no source edits for this item.
+  - Summary: strong S/O in packages/protocol, shared-types, ecs pure systems;
+    realtime gateway + handlers.ts carry multiple responsibilities and a
+    central switch; HandlerCtx is a broad façade; optional next steps are a
+    message-handler registry, an EventStore port at the composition root, and
+    extracting rollup/partition application services from handlers.ts.

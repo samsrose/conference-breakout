@@ -57,3 +57,11 @@ Deliverables:
 Confirmed: pragmatic split (Next.js on Node/Vercel frontends + dedicated Deno
 realtime backend with Hono + Deno KV + event-code JWT for participants,
 host magic-link auth). Plan approved; implementation started.
+
+[2026-04-28  solid-review]
+check code with SOLID principles
+---optimized---
+Review the repo against SOLID: call out strengths/weaknesses per letter with
+concrete file references; note trade-offs for a small service; suggest
+incremental refactor directions only if they clearly improve cohesion or
+testability. Do not change the plan file or refactor unless the user asks.
