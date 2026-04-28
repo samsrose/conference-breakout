@@ -39,7 +39,7 @@ export default function HostDashboard() {
         <CreateEventCard credentials={creds} onCreated={setSession} />
         {terminalReason && (
           <p className="text-xs text-amber-500">
-            Previous session ended ({terminalReason}). Create a new event to continue.
+            Previous session ended ({terminalReason} || "unknown reason"). Create a new event to continue.
           </p>
         )}
       </main>

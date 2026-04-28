@@ -12,3 +12,8 @@ coverage
 .deno
 kv.sqlite3
 kv.sqlite3-*
+
+CLAUDE.md
+prompt.txt
+changes/changes.txt
+AGENT.md
