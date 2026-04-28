@@ -121,11 +121,3 @@ scripts/
 changes/changes.txt  Required change log
 prompt.txt           Required prompt log
 ```
-
-## User rules observed
-
-- Every prompt appended to [prompt.txt](prompt.txt)
-- Every change appended to [changes/changes.txt](changes/changes.txt)
-- Strict TypeScript throughout (`tsconfig.base.json`)
-- Ring-level security + ECS domain model as described above
-- React code is 100% functional components, split into small, well-named files
