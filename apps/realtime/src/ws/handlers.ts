@@ -36,6 +36,7 @@ import type { SocketSession } from "./session.ts";
 import { sendEnvelope } from "./session.ts";
 import type { Store } from "../kv/store.ts";
 import { requireHost, requireParticipant } from "../security/guards.ts";
+import { computeFormProgress } from "./formProgress.ts";
 
 export interface HandlerCtx {
   store: Store;
@@ -121,6 +122,9 @@ async function handleResponseSubmit(
   };
   await ctx.store.putResponse(response);
   await pushRollup(ctx, session.eventId, payload.formId);
+  const forms = await ctx.store.listForms(session.eventId);
+  const form = forms.find((f) => f.id === payload.formId);
+  if (form) await pushFormProgress(ctx, session.eventId, form);
 }
 
 async function pushRollup(
@@ -144,6 +148,33 @@ async function pushRollup(
       eventId,
       ServerMessageType.ResponseRollup,
       rollup,
+    );
+  }
+}
+
+async function pushFormProgress(
+  ctx: HandlerCtx,
+  eventId: EventId,
+  form: Form,
+): Promise<void> {
+  const progress = await computeFormProgress(ctx.store, eventId, form);
+  const payload = {
+    eventId,
+    formId: form.id,
+    ...progress,
+  };
+  if (form.target.kind === "event") {
+    await ctx.broadcaster.toParticipants(
+      eventId,
+      ServerMessageType.FormProgress,
+      payload,
+    );
+  } else {
+    await ctx.broadcaster.toGroup(
+      eventId,
+      form.target.groupId,
+      ServerMessageType.FormProgress,
+      payload,
     );
   }
 }
@@ -177,6 +208,7 @@ async function handleHostFormIssue(
       { form, target: form.target },
     );
   }
+  await pushFormProgress(ctx, session.eventId, form);
 }
 
 async function handleHostPartition(

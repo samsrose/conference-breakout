@@ -25,9 +25,12 @@ export function ResponseRollup({ rollups }: Props) {
 function RollupCard({ rollup }: { rollup: ResponseRollupPayload }) {
   return (
     <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-slate-500">
-          {rollup.questionId}
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className="text-sm font-medium leading-snug text-slate-900 dark:text-slate-100"
+          title={rollup.questionId}
+        >
+          {rollup.prompt}
         </span>
         <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
           {rollup.total} response{rollup.total === 1 ? "" : "s"}
@@ -35,7 +38,11 @@ function RollupCard({ rollup }: { rollup: ResponseRollupPayload }) {
       </div>
       <div className="mt-2">
         {rollup.summary.kind === "choice" && (
-          <ChoiceBars counts={rollup.summary.counts} total={rollup.total} />
+          <ChoiceBars
+            counts={rollup.summary.counts}
+            optionLabels={rollup.summary.optionLabels}
+            total={rollup.total}
+          />
         )}
         {rollup.summary.kind === "scale" && (
           <p className="text-sm">Mean: {rollup.summary.mean.toFixed(2)}</p>
@@ -52,16 +59,28 @@ function RollupCard({ rollup }: { rollup: ResponseRollupPayload }) {
   );
 }
 
-function ChoiceBars({ counts, total }: { counts: number[]; total: number }) {
+function ChoiceBars({
+  counts,
+  optionLabels,
+  total,
+}: {
+  counts: number[];
+  optionLabels: string[];
+  total: number;
+}) {
   return (
     <div className="space-y-2">
       {counts.map((c, i) => {
         const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+        const label =
+          optionLabels[i] ?? (counts.length > 0 ? `Option ${i + 1}` : String(i));
         return (
           <div key={i}>
-            <div className="flex justify-between text-xs">
-              <span>Option {i + 1}</span>
-              <span>
+            <div className="flex justify-between gap-2 text-xs">
+              <span className="min-w-0 truncate" title={label}>
+                {label}
+              </span>
+              <span className="shrink-0">
                 {c} ({pct}%)
               </span>
             </div>

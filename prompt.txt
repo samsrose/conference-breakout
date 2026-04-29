@@ -65,3 +65,41 @@ Review the repo against SOLID: call out strengths/weaknesses per letter with
 concrete file references; note trade-offs for a small service; suggest
 incremental refactor directions only if they clearly improve cohesion or
 testability. Do not change the plan file or refactor unless the user asks.
+
+[2026-04-28  client-session]
+When launching a new conversation with the client on port 3001 make sure that
+the last session is logged out and cleared so that the client does not connect
+to a previous session
+---optimized---
+On participant client load, clear persisted session and offline submit queue from
+localStorage; stop auto-restoring session from storage so opening :3001 never
+reconnects with a stale JWT. Keep in-memory session only for the current page
+lifetime; terminal server errors still clear the same keys.
+
+[2026-04-28  rollup-prompt]
+The live responses title for each question should match the prompt name question,
+not some random hash like q_0_bbc8148e0c94
+---optimized---
+Add `prompt` to ResponseRollup in shared-types; populate it from each Question in
+ecs `rollupFor`; show prompt as the Live responses card title on the host
+dashboard (keep questionId in HTML title tooltip for support). Update aggregation
+tests.
+
+[2026-04-28  rollup-option-labels]
+for the Live responses, change the option title from option 1 to the actual option
+value. Instead of 'option 1' and 'option 2', it would be 'good' and 'bad'.
+---optimized---
+Extend choice rollup summary with `optionLabels` (from Question.options); render
+those strings in ChoiceBars with truncate + title tooltip; fallback to Option N if
+missing. Update Zod schema and aggregation tests.
+
+[2026-04-28  participant-form-progress]
+on localhost:3001 under the "All questions answered. Waiting for the next prompt..."
+show how many remaining answers are yet to be submitted so users are aware of how
+many people have left to submit.
+---optimized---
+Add server message `form.progress` with expectedRespondents, completedAllQuestions,
+remainingRespondents (eligible = event or group scope; completed = all questions
+answered). Broadcast after form issue and each response.submit. Participant hook
+stores formProgress; FormRunner shows remaining people under the all-done message.
+Reset form state per form via key on FormRunner.

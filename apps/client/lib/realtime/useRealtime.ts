@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ServerMessageType,
   type FormIssuedPayload,
+  type FormProgressPayload,
   type GroupAssignedPayload,
   type PhaseChangedPayload,
   type ResponseSubmitPayload,
@@ -18,6 +19,7 @@ export interface ParticipantRealtimeState {
   welcome: WelcomePayload | null;
   group: GroupAssignedPayload | null;
   currentForm: FormIssuedPayload | null;
+  formProgress: FormProgressPayload | null;
   phase: PhaseChangedPayload["phase"] | null;
   pendingSubmits: number;
   error: string | null;
@@ -33,6 +35,7 @@ const emptyState: ParticipantRealtimeState = {
   welcome: null,
   group: null,
   currentForm: null,
+  formProgress: null,
   phase: null,
   pendingSubmits: 0,
   error: null,
@@ -102,7 +105,13 @@ function applyMessage(
       case ServerMessageType.GroupAssigned:
         return { ...s, group: payload as GroupAssignedPayload };
       case ServerMessageType.FormIssued:
-        return { ...s, currentForm: payload as FormIssuedPayload };
+        return {
+          ...s,
+          currentForm: payload as FormIssuedPayload,
+          formProgress: null,
+        };
+      case ServerMessageType.FormProgress:
+        return { ...s, formProgress: payload as FormProgressPayload };
       case ServerMessageType.PhaseChanged:
         return { ...s, phase: (payload as PhaseChangedPayload).phase };
       case ServerMessageType.Error:

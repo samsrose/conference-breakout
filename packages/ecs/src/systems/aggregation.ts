@@ -34,8 +34,13 @@ export function rollupFor(
       return {
         formId,
         questionId: question.id as QuestionId,
+        prompt: question.prompt,
         total: responses.length,
-        summary: { kind: "choice", counts },
+        summary: {
+          kind: "choice",
+          counts,
+          optionLabels: [...question.options],
+        },
       };
     }
     case "text": {
@@ -46,6 +51,7 @@ export function rollupFor(
       return {
         formId,
         questionId: question.id as QuestionId,
+        prompt: question.prompt,
         total: responses.length,
         summary: { kind: "text", samples },
       };
@@ -64,6 +70,7 @@ export function rollupFor(
       return {
         formId,
         questionId: question.id as QuestionId,
+        prompt: question.prompt,
         total: responses.length,
         summary: {
           kind: "scale",

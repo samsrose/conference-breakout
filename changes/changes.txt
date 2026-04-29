@@ -91,3 +91,36 @@ Format:
     central switch; HandlerCtx is a broad façade; optional next steps are a
     message-handler registry, an EventStore port at the composition root, and
     extracting rollup/partition application services from handlers.ts.
+
+[2026-04-28  apps/client]  Fresh participant session on each app load
+  - app/page.tsx: on mount clear localStorage keys breakout:session and
+    breakout:queue; remove auto-restore and remove persisting session after
+    join (in-memory only until refresh).
+  - lib/realtime/submitQueue.ts: export SUBMIT_QUEUE_STORAGE_KEY for a single
+    source of truth shared with page cleanup.
+  - Terminal WS callback still clears the same persisted keys.
+
+[2026-04-28  packages/shared-types+ecs+host]  Rollup cards show question prompt
+  - ResponseRollupSchema: add `prompt` (mirrors Question.prompt, max 500).
+  - packages/ecs aggregation rollupFor: set prompt on every rollup variant.
+  - apps/host ResponseRollup.tsx: card header shows prompt; questionId on
+    title attribute for debugging.
+  - packages/ecs aggregation tests assert rollup.prompt.
+
+[2026-04-28  rollup-option-labels]  Live responses use real option text
+  - ResponseRollupSchema choice branch: add optionLabels (2–12 strings, max 200
+    chars) parallel to counts.
+  - rollupFor (single/multi): summary includes optionLabels from question.options.
+  - ResponseRollup ChoiceBars: label each row with optionLabels[i], truncate long
+    labels, full text in title; fallback Option N if index missing.
+  - aggregation.test.ts expects optionLabels on choice rollup.
+
+[2026-04-28  form.progress]  Participant wait screen shows cohort completion
+  - shared-types FormProgressSchema; protocol ServerMessageType.FormProgress +
+    payload schema in codec map.
+  - apps/realtime: computeFormProgress (eligible by form target event vs group;
+    complete = at least one response per question); pushFormProgress after
+    host.form.issue and response.submit; formProgress.ts + handlers wiring.
+  - apps/client: useParticipantRealtime formProgress state; FormRunner shows
+    remainingRespondents + completed/total under all-questions-answered copy;
+    page keys FormRunner by form.id to reset local answered state.

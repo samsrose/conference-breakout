@@ -22,11 +22,13 @@ export type Response = z.infer<typeof ResponseSchema>;
 export const ResponseRollupSchema = z.object({
   formId: FormIdSchema,
   questionId: QuestionIdSchema,
+  prompt: z.string().min(1).max(500),
   total: z.number().int().nonnegative(),
   summary: z.union([
     z.object({
       kind: z.literal("choice"),
       counts: z.array(z.number().int().nonnegative()),
+      optionLabels: z.array(z.string().min(1).max(200)).min(2).max(12),
     }),
     z.object({
       kind: z.literal("text"),

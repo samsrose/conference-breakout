@@ -6,7 +6,7 @@ interface QueuedMessage<T = unknown> {
   queuedAt: number;
 }
 
-const STORAGE_KEY = "breakout:queue";
+export const SUBMIT_QUEUE_STORAGE_KEY = "breakout:queue";
 
 export class SubmitQueue {
   private queue: QueuedMessage[] = [];
@@ -39,7 +39,7 @@ export class SubmitQueue {
 function readFromStorage(): QueuedMessage[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(SUBMIT_QUEUE_STORAGE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as QueuedMessage[];
   } catch {
@@ -50,7 +50,10 @@ function readFromStorage(): QueuedMessage[] {
 function persist(q: QueuedMessage[]): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(q));
+    window.localStorage.setItem(
+      SUBMIT_QUEUE_STORAGE_KEY,
+      JSON.stringify(q),
+    );
   } catch {
     // storage full - drop oldest
   }

@@ -47,8 +47,13 @@ describe("AggregationSystem", () => {
     addResponse(w, 2, q.id, { kind: "single", optionIndex: 0 });
     addResponse(w, 3, q.id, { kind: "single", optionIndex: 2 });
     const rollup = rollupFor(w, formId, q);
+    expect(rollup.prompt).toBe("pick");
     expect(rollup.total).toBe(3);
-    expect(rollup.summary).toEqual({ kind: "choice", counts: [2, 0, 1] });
+    expect(rollup.summary).toEqual({
+      kind: "choice",
+      counts: [2, 0, 1],
+      optionLabels: ["A", "B", "C"],
+    });
   });
 
   it("aggregates scale responses into histogram + mean", () => {
@@ -66,6 +71,7 @@ describe("AggregationSystem", () => {
     addResponse(w, 2, q.id, { kind: "scale", value: 3 });
     addResponse(w, 3, q.id, { kind: "scale", value: 4 });
     const rollup = rollupFor(w, formId, q);
+    expect(rollup.prompt).toBe("rate");
     expect(rollup.total).toBe(3);
     if (rollup.summary.kind !== "scale") throw new Error("kind");
     expect(rollup.summary.mean).toBeCloseTo(4);
@@ -85,6 +91,7 @@ describe("AggregationSystem", () => {
       addResponse(w, i, q.id, { kind: "text", text: `t${i}` });
     }
     const rollup = rollupFor(w, formId, q);
+    expect(rollup.prompt).toBe("say");
     expect(rollup.total).toBe(30);
     if (rollup.summary.kind !== "text") throw new Error("kind");
     expect(rollup.summary.samples).toHaveLength(20);

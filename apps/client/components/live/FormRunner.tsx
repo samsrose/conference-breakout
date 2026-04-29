@@ -7,6 +7,7 @@ import type {
   QuestionId,
   ResponseValue,
 } from "@app/shared-types";
+import type { FormProgressPayload } from "@app/protocol";
 import { QuestionSingle } from "./QuestionSingle.tsx";
 import { QuestionMulti } from "./QuestionMulti.tsx";
 import { QuestionText } from "./QuestionText.tsx";
@@ -14,6 +15,7 @@ import { QuestionScale } from "./QuestionScale.tsx";
 
 interface Props {
   form: Form;
+  formProgress?: FormProgressPayload | null;
   onSubmit: (payload: {
     formId: FormId;
     questionId: QuestionId;
@@ -21,7 +23,7 @@ interface Props {
   }) => void;
 }
 
-export function FormRunner({ form, onSubmit }: Props) {
+export function FormRunner({ form, formProgress, onSubmit }: Props) {
   const [answered, setAnswered] = useState<Set<string>>(new Set());
 
   function record(questionId: QuestionId, value: ResponseValue) {
@@ -89,9 +91,33 @@ export function FormRunner({ form, onSubmit }: Props) {
         );
       })}
       {allDone && (
-        <p className="text-center text-sm text-emerald-400">
-          All questions answered. Waiting for the next prompt...
-        </p>
+        <div className="space-y-2 text-center">
+          <p className="text-sm text-emerald-400">
+            All questions answered. Waiting for the next prompt...
+          </p>
+          {formProgress &&
+            formProgress.formId === form.id &&
+            formProgress.expectedRespondents > 0 && (
+              <p className="text-xs leading-relaxed text-slate-400">
+                {formProgress.remainingRespondents === 0 ? (
+                  <>Everyone in this prompt has finished all questions.</>
+                ) : (
+                  <>
+                    <span className="font-semibold text-slate-300">
+                      {formProgress.remainingRespondents}
+                    </span>{" "}
+                    {formProgress.remainingRespondents === 1
+                      ? "person still has answers left to submit"
+                      : "people still have answers left to submit"}{" "}
+                    <span className="text-slate-500">
+                      ({formProgress.completedAllQuestions} of{" "}
+                      {formProgress.expectedRespondents} finished)
+                    </span>
+                  </>
+                )}
+              </p>
+            )}
+        </div>
       )}
     </section>
   );

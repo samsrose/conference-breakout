@@ -3,6 +3,7 @@ import {
   EventIdSchema,
   EventPhaseSchema,
   FormSchema,
+  FormProgressSchema,
   FormTargetSchema,
   GroupIdSchema,
   ParticipantIdSchema,
@@ -14,6 +15,7 @@ import { ErrorCode } from "../errors.ts";
 export const ServerMessageType = {
   Welcome: "welcome",
   FormIssued: "form.issued",
+  FormProgress: "form.progress",
   GroupAssigned: "group.assigned",
   PresenceDelta: "presence.delta",
   ResponseRollup: "response.rollup",
@@ -38,6 +40,9 @@ export const FormIssuedPayloadSchema = z.object({
   target: FormTargetSchema,
 });
 export type FormIssuedPayload = z.infer<typeof FormIssuedPayloadSchema>;
+
+export const FormProgressPayloadSchema = FormProgressSchema;
+export type FormProgressPayload = z.infer<typeof FormProgressPayloadSchema>;
 
 export const GroupAssignedPayloadSchema = z.object({
   groupId: GroupIdSchema.nullable(),
@@ -78,6 +83,7 @@ export type PongPayload = z.infer<typeof PongPayloadSchema>;
 export const SERVER_PAYLOAD_SCHEMAS = {
   [ServerMessageType.Welcome]: WelcomePayloadSchema,
   [ServerMessageType.FormIssued]: FormIssuedPayloadSchema,
+  [ServerMessageType.FormProgress]: FormProgressPayloadSchema,
   [ServerMessageType.GroupAssigned]: GroupAssignedPayloadSchema,
   [ServerMessageType.PresenceDelta]: PresenceDeltaPayloadSchema,
   [ServerMessageType.ResponseRollup]: ResponseRollupPayloadSchema,

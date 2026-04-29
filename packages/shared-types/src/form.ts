@@ -18,3 +18,12 @@ export const FormSchema = z.object({
   closesAt: z.number().int().nonnegative().optional(),
 });
 export type Form = z.infer<typeof FormSchema>;
+
+export const FormProgressSchema = z.object({
+  eventId: EventIdSchema,
+  formId: FormIdSchema,
+  expectedRespondents: z.number().int().nonnegative(),
+  completedAllQuestions: z.number().int().nonnegative(),
+  remainingRespondents: z.number().int().nonnegative(),
+});
+export type FormProgress = z.infer<typeof FormProgressSchema>;

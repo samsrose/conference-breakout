@@ -7,6 +7,7 @@ import { JoinForm } from "../components/join/JoinForm.tsx";
 import { GroupBanner } from "../components/live/GroupBanner.tsx";
 import { FormRunner } from "../components/live/FormRunner.tsx";
 import { ConnectionStatus } from "../components/live/ConnectionStatus.tsx";
+import { SUBMIT_QUEUE_STORAGE_KEY } from "../lib/realtime/submitQueue.ts";
 import { useParticipantRealtime } from "../lib/realtime/useRealtime.ts";
 
 interface Session {
@@ -33,20 +34,21 @@ function ParticipantApp() {
       // unauthorized). Clear it and send the user back to the join screen.
       setTerminalReason(reason);
       setSession(null);
-      safeClear();
+      clearParticipantPersistedState();
     },
   );
 
+  // Each full load of the participant app starts clean: no auto-restore from
+  // localStorage and no stale submit queue from a prior event (avoids
+  // reconnecting to an old JWT/session when opening port 3001 again).
   useEffect(() => {
-    const stored = safeRead();
-    if (stored) setSession(stored);
+    clearParticipantPersistedState();
+    setSession(null);
+    setTerminalReason(null);
   }, []);
 
   useEffect(() => {
-    if (session) {
-      safeWrite(session);
-      setTerminalReason(null);
-    }
+    if (session) setTerminalReason(null);
   }, [session]);
 
   if (!session) {
@@ -83,7 +85,9 @@ function ParticipantApp() {
 
       {realtime.currentForm ? (
         <FormRunner
+          key={realtime.currentForm.form.id}
           form={realtime.currentForm.form}
+          formProgress={realtime.formProgress}
           onSubmit={realtime.submitResponse}
         />
       ) : (
@@ -107,28 +111,13 @@ function Splash() {
   );
 }
 
-const STORAGE = "breakout:session";
-function safeRead(): Session | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(STORAGE);
-    return raw ? (JSON.parse(raw) as Session) : null;
-  } catch {
-    return null;
-  }
-}
-function safeWrite(s: Session): void {
+const SESSION_STORAGE_KEY = "breakout:session";
+
+function clearParticipantPersistedState(): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE, JSON.stringify(s));
-  } catch {
-    // ignore
-  }
-}
-function safeClear(): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.removeItem(STORAGE);
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    window.localStorage.removeItem(SUBMIT_QUEUE_STORAGE_KEY);
   } catch {
     // ignore
   }
