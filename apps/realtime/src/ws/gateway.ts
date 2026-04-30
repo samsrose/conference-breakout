@@ -153,6 +153,14 @@ async function createSession(
     };
   }
 
+  const eventForParticipant = await deps.store.getEvent(claims.eventId);
+  if (!eventForParticipant) {
+    throw new ProtocolError(ErrorCode.NotFound, "event not found");
+  }
+  if (eventForParticipant.phase === "closed") {
+    throw new ProtocolError(ErrorCode.EventClosed, "event concluded");
+  }
+
   const participant = await ensureParticipant(deps, claims);
   return {
     id,

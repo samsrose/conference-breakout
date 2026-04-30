@@ -103,3 +103,20 @@ remainingRespondents (eligible = event or group scope; completed = all questions
 answered). Broadcast after form issue and each response.submit. Participant hook
 stores formProgress; FormRunner shows remaining people under the all-done message.
 Reset form state per form via key on FormRunner.
+
+[2026-04-29  scale-rollup-counts]
+Scale rollup: counts per choice, no mean — implement plan (response schema values+counts,
+rollupFor dense ticks, host ChoiceBars for scale).
+---optimized---
+Replace scale ResponseRollup summary (histogram/mean) with parallel `values` and `counts`
+for min..max..step; render in host Live responses with same bar UI as choices; update
+ECS aggregation test and typechecks.
+
+[2026-04-29  conclude-event]
+Add a "Conclude" event button at the top which closes all the client connections and
+says "Thank you for participating"
+---optimized---
+Host dashboard: Conclude button sets phase closed (WS + KV + closedAt). Broadcast
+phase.changed then hub.disconnectParticipants. Reject new participant WS attaches and
+host mutations when closed. Participant client: endConnectionWhenEventClosed + conclude(),
+thank-you screen on phase closed. optional: EVENT_CLOSED terminal on join.

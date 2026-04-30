@@ -16,6 +16,7 @@ const TERMINAL_ERROR_CODES = new Set([
   "UNAUTHORIZED",
   "NOT_FOUND",
   "VERSION_MISMATCH",
+  "EVENT_CLOSED",
 ]);
 
 export interface RealtimeClientOptions {
@@ -28,6 +29,8 @@ export interface RealtimeClientOptions {
   onTerminal?: (reason: string) => void;
   heartbeatIntervalMs?: number;
   maxReconnectAttempts?: number;
+  /** When true, `phase: closed` ends the socket without reconnect (participant clients). */
+  endConnectionWhenEventClosed?: boolean;
 }
 
 export class RealtimeClient {
@@ -64,6 +67,13 @@ export class RealtimeClient {
           }
         }
         this.opts.onMessage(envelope.type, payload);
+        if (
+          this.opts.endConnectionWhenEventClosed &&
+          envelope.type === ServerMessageType.PhaseChanged &&
+          (payload as { phase?: string }).phase === "closed"
+        ) {
+          this.conclude();
+        }
       } catch (err) {
         this.opts.onError?.(err as Error);
       }
@@ -110,6 +120,12 @@ export class RealtimeClient {
       // already closed
     }
     this.socket = null;
+  }
+
+  /** Stop reconnects and close (e.g. host ended the event). */
+  conclude(): void {
+    this.terminalStop = true;
+    this.close();
   }
 
   private startHeartbeat(): void {

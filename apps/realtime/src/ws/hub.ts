@@ -41,6 +41,18 @@ export class Hub {
     return [...this.participants(eventId), ...this.hosts(eventId)];
   }
 
+  /** Close every participant WebSocket for an event (host sockets stay connected). */
+  disconnectParticipants(eventId: EventId, code: number, reason: string): void {
+    const list = [...this.participants(eventId)];
+    for (const s of list) {
+      try {
+        s.socket.close(code, reason);
+      } catch {
+        // already closed
+      }
+    }
+  }
+
   activeEventIds(): EventId[] {
     const seen = new Set<EventId>();
     for (const id of this.eventSockets.keys()) seen.add(id);

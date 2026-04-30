@@ -124,3 +124,19 @@ Format:
   - apps/client: useParticipantRealtime formProgress state; FormRunner shows
     remainingRespondents + completed/total under all-questions-answered copy;
     page keys FormRunner by form.id to reset local answered state.
+
+[2026-04-29  scale-rollup]  Live responses: scale counts per tick, no mean
+  - ResponseRollupSchema scale: `values` + `counts` (removed histogram, mean).
+  - packages/ecs rollupFor scale: dense ticks from min/max/step, Map lookup counts.
+  - apps/host ResponseRollup: reuse ChoiceBars for scale (labels from values).
+  - aggregation.test.ts: expect [1..5] and [0,0,1,1,1] for sample data.
+
+[2026-04-29  conclude-event]  Host Conclude + participant thank-you
+  - Host EventHeader: danger "Conclude event" button; useHostRealtime.concludeEvent sends
+    host.event.phase closed; Welcome sets phase in state; create-event terminal copy fix.
+  - Store setEventPhase sets closedAt when moving to closed.
+  - Hub.disconnectParticipants; handleHostPhase broadcasts then closes participant sockets.
+  - requireEventNotClosed for form issue, partition, merge, response.submit; handleHostPhase
+    blocks non-closed transitions after closed; gateway rejects participant attach if event closed.
+  - apps/client RealtimeClient: endConnectionWhenEventClosed + conclude(); EVENT_CLOSED terminal;
+    participant page full-screen "Thank you for participating" when phase closed; Welcome sets phase.

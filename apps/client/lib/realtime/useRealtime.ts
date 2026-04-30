@@ -60,6 +60,7 @@ export function useParticipantRealtime(
     const client = new RealtimeClient({
       url: REALTIME_WS,
       token,
+      endConnectionWhenEventClosed: true,
       onOpen: () => {
         setState((s) => ({ ...s, connected: true }));
         queueRef.current?.drain();
@@ -100,8 +101,10 @@ function applyMessage(
 ): void {
   setState((s) => {
     switch (type) {
-      case ServerMessageType.Welcome:
-        return { ...s, welcome: payload as WelcomePayload };
+      case ServerMessageType.Welcome: {
+        const welcome = payload as WelcomePayload;
+        return { ...s, welcome, phase: welcome.phase };
+      }
       case ServerMessageType.GroupAssigned:
         return { ...s, group: payload as GroupAssignedPayload };
       case ServerMessageType.FormIssued:

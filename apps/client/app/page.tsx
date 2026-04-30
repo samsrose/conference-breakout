@@ -64,6 +64,20 @@ function ParticipantApp() {
     );
   }
 
+  const livePhase = realtime.phase ?? session.event.phase;
+  if (livePhase === "closed") {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+        <p className="text-2xl font-semibold text-slate-100">
+          Thank you for participating
+        </p>
+        <p className="max-w-sm text-sm text-slate-400">
+          {session.event.title} has ended. You can close this page.
+        </p>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 p-4 pt-8">
       <header className="flex items-center justify-between">

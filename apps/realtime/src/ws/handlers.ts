@@ -44,6 +44,16 @@ export interface HandlerCtx {
   broadcaster: Broadcaster;
 }
 
+async function requireEventNotClosed(
+  store: Store,
+  eventId: EventId,
+): Promise<void> {
+  const e = await store.getEvent(eventId);
+  if (e?.phase === "closed") {
+    throw new ProtocolError(ErrorCode.EventClosed, "event concluded");
+  }
+}
+
 export async function dispatchClientMessage(
   ctx: HandlerCtx,
   session: SocketSession,
@@ -111,6 +121,7 @@ async function handleResponseSubmit(
   payload: ResponseSubmitPayload,
 ): Promise<void> {
   requireParticipant(session);
+  await requireEventNotClosed(ctx.store, session.eventId);
   const response: Response = {
     id: newId("resp") as unknown as ResponseId,
     eventId: session.eventId,
@@ -185,6 +196,7 @@ async function handleHostFormIssue(
   payload: HostFormIssuePayload,
 ): Promise<void> {
   requireHost(session);
+  await requireEventNotClosed(ctx.store, session.eventId);
   const id = newId("form") as unknown as FormId;
   const now = Date.now();
   const form: Form = FormSchema.parse({
@@ -217,6 +229,7 @@ async function handleHostPartition(
   payload: HostGroupPartitionPayload,
 ): Promise<void> {
   requireHost(session);
+  await requireEventNotClosed(ctx.store, session.eventId);
   const size = payload.size > 0 ? payload.size : GROUP_CAPACITY;
   const participants = await ctx.store.listParticipants(session.eventId);
   const world = createWorld();
@@ -275,6 +288,7 @@ async function handleHostMerge(
   _payload: HostGroupMergePayload,
 ): Promise<void> {
   requireHost(session);
+  await requireEventNotClosed(ctx.store, session.eventId);
   const participants = await ctx.store.listParticipants(session.eventId);
   const world = createWorld();
   for (const p of participants) {
@@ -320,12 +334,22 @@ async function handleHostPhase(
   payload: HostEventPhasePayload,
 ): Promise<void> {
   requireHost(session);
+  const meta = await ctx.store.getEvent(session.eventId);
+  if (!meta) {
+    throw new ProtocolError(ErrorCode.NotFound, "event not found");
+  }
+  if (meta.phase === "closed" && payload.phase !== "closed") {
+    throw new ProtocolError(ErrorCode.EventClosed, "event concluded");
+  }
   await ctx.store.setEventPhase(session.eventId, payload.phase);
   await ctx.broadcaster.toEvent(
     session.eventId,
     ServerMessageType.PhaseChanged,
     { phase: payload.phase },
   );
+  if (payload.phase === "closed") {
+    ctx.hub.disconnectParticipants(session.eventId, 1000, "event concluded");
+  }
 }
 
 function newId(prefix: string): string {

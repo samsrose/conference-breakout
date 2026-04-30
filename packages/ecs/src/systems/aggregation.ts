@@ -57,15 +57,21 @@ export function rollupFor(
       };
     }
     case "scale": {
-      const histogram: Record<string, number> = {};
-      let sum = 0;
-      let n = 0;
+      const values: number[] = [];
+      for (
+        let v = question.min;
+        v <= question.max;
+        v += question.step
+      ) {
+        values.push(v);
+      }
+      const counts = new Array<number>(values.length).fill(0);
+      const valueToIndex = new Map(values.map((val, i) => [val, i]));
       for (const r of responses) {
         if (r.value.kind !== "scale") continue;
-        const key = String(r.value.value);
-        histogram[key] = (histogram[key] ?? 0) + 1;
-        sum += r.value.value;
-        n += 1;
+        const idx = valueToIndex.get(r.value.value);
+        if (idx === undefined) continue;
+        counts[idx] = (counts[idx] ?? 0) + 1;
       }
       return {
         formId,
@@ -74,8 +80,8 @@ export function rollupFor(
         total: responses.length,
         summary: {
           kind: "scale",
-          histogram,
-          mean: n > 0 ? sum / n : 0,
+          values,
+          counts,
         },
       };
     }

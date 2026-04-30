@@ -56,7 +56,7 @@ describe("AggregationSystem", () => {
     });
   });
 
-  it("aggregates scale responses into histogram + mean", () => {
+  it("aggregates scale responses into per-tick counts", () => {
     const w = createWorld();
     const q: Question = {
       id: "q_2" as unknown as QuestionId,
@@ -74,8 +74,8 @@ describe("AggregationSystem", () => {
     expect(rollup.prompt).toBe("rate");
     expect(rollup.total).toBe(3);
     if (rollup.summary.kind !== "scale") throw new Error("kind");
-    expect(rollup.summary.mean).toBeCloseTo(4);
-    expect(rollup.summary.histogram["5"]).toBe(1);
+    expect(rollup.summary.values).toEqual([1, 2, 3, 4, 5]);
+    expect(rollup.summary.counts).toEqual([0, 0, 1, 1, 1]);
   });
 
   it("aggregates text responses into capped samples", () => {

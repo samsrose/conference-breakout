@@ -45,7 +45,11 @@ function RollupCard({ rollup }: { rollup: ResponseRollupPayload }) {
           />
         )}
         {rollup.summary.kind === "scale" && (
-          <p className="text-sm">Mean: {rollup.summary.mean.toFixed(2)}</p>
+          <ChoiceBars
+            counts={rollup.summary.counts}
+            optionLabels={rollup.summary.values.map(String)}
+            total={rollup.total}
+          />
         )}
         {rollup.summary.kind === "text" && (
           <ul className="list-disc space-y-1 pl-5 text-sm">

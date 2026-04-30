@@ -13,6 +13,7 @@ interface Props {
 
 export function GroupControls({ onPartition, onMerge, phase }: Props) {
   const [size, setSize] = useState(8);
+  const locked = phase === "closed";
   return (
     <Card>
       <CardTitle>Groups</CardTitle>
@@ -29,12 +30,17 @@ export function GroupControls({ onPartition, onMerge, phase }: Props) {
             max={50}
             value={size}
             onChange={(e) => setSize(Number(e.target.value))}
+            disabled={locked}
           />
         </div>
-        <Button onClick={() => onPartition(size)}>
+        <Button disabled={locked} onClick={() => onPartition(size)}>
           Partition into groups of {size}
         </Button>
-        <Button variant="secondary" onClick={onMerge} disabled={phase !== "breakout"}>
+        <Button
+          variant="secondary"
+          onClick={onMerge}
+          disabled={locked || phase !== "breakout"}
+        >
           Merge to plenary
         </Button>
       </div>

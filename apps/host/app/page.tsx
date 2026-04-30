@@ -39,7 +39,8 @@ export default function HostDashboard() {
         <CreateEventCard credentials={creds} onCreated={setSession} />
         {terminalReason && (
           <p className="text-xs text-amber-500">
-            Previous session ended ({terminalReason} || "unknown reason"). Create a new event to continue.
+            Previous session ended ({terminalReason ?? "unknown reason"}). Create a
+            new event to continue.
           </p>
         )}
       </main>
@@ -52,6 +53,7 @@ export default function HostDashboard() {
         event={session.event}
         connected={realtime.connected}
         phase={realtime.phase}
+        onConclude={realtime.concludeEvent}
       />
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">

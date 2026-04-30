@@ -26,6 +26,7 @@ export interface HostRealtime extends HostRealtimeState {
   partitionGroups: (size: number) => void;
   mergeGroups: () => void;
   setPhase: (phase: PhaseChangedPayload["phase"]) => void;
+  concludeEvent: () => void;
 }
 
 const emptyState: HostRealtimeState = {
@@ -81,8 +82,18 @@ export function useHostRealtime(
   const setPhase = useCallback((phase: PhaseChangedPayload["phase"]) => {
     clientRef.current?.send("host.event.phase", { phase });
   }, []);
+  const concludeEvent = useCallback(() => {
+    clientRef.current?.send("host.event.phase", { phase: "closed" });
+  }, []);
 
-  return { ...state, issueForm, partitionGroups, mergeGroups, setPhase };
+  return {
+    ...state,
+    issueForm,
+    partitionGroups,
+    mergeGroups,
+    setPhase,
+    concludeEvent,
+  };
 }
 
 function applyMessage(
@@ -92,8 +103,10 @@ function applyMessage(
 ): void {
   setState((s) => {
     switch (type) {
-      case ServerMessageType.Welcome:
-        return { ...s, welcome: payload as WelcomePayload };
+      case ServerMessageType.Welcome: {
+        const welcome = payload as WelcomePayload;
+        return { ...s, welcome, phase: welcome.phase };
+      }
       case ServerMessageType.PresenceDelta:
         return { ...s, presence: payload as PresenceDeltaPayload };
       case ServerMessageType.ResponseRollup: {

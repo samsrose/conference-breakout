@@ -42,7 +42,13 @@ export class Store {
   async setEventPhase(eventId: EventId, phase: EventPhase): Promise<void> {
     const existing = await this.kv.get<EventMeta>(keys.event(eventId));
     if (!existing.value) throw new Error("event not found");
-    const next: EventMeta = { ...existing.value, phase };
+    const next: EventMeta = {
+      ...existing.value,
+      phase,
+      ...(phase === "closed"
+        ? { closedAt: existing.value.closedAt ?? Date.now() }
+        : {}),
+    };
     await this.kv.set(keys.event(eventId), next);
   }
 

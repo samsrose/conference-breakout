@@ -36,8 +36,8 @@ export const ResponseRollupSchema = z.object({
     }),
     z.object({
       kind: z.literal("scale"),
-      histogram: z.record(z.string(), z.number().int().nonnegative()),
-      mean: z.number(),
+      values: z.array(z.number()),
+      counts: z.array(z.number().int().nonnegative()),
     }),
   ]),
 });
